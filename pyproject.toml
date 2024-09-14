@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fastapi-mongo-base"
+version = "0.1.0"
+description = "A simple boilerplate application, including models and schemas and abstract router, for FastAPI with MongoDB"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {file = "LICENSE.txt"}
+keywords = ["fastapi", "mongodb", "beanie"]
+authors = [
+  {name = "Mahdi Kiani", email = "mahdikiany@gmail.com"}
+]
+maintainers = [
+  {name = "Mahdi Kiani", email = "mahdikiany@gmail.com"}
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Build Tools",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3 :: Only",
+]
+dependencies = [
+  "peppercorn",  # Example main dependency
+  "pydantic>=1.8.2",
+  "requests>=2.26.0",
+  "pyjwt[crypto]",
+  "singleton_package"
+]
+optional-dependencies = {"fastapi" = ["fastapi>=0.65.0", "uvicorn[standard]>=0.13.0"],"django" = ["Django>=3.2"],"dev" = ["check-manifest"],"test" = ["coverage"]}
+
+[project.urls]
+"Homepage" = "https://github.com/mahdikiani/fastapi-mongo-base-app"
+"Bug Reports" = "https://github.com/mahdikiani/fastapi-mongo-base-app/issues"
+"Funding" = "https://github.com/mahdikiani/fastapi-mongo-base-app"
+"Say Thanks!" = "https://saythanks.io/to/mahdikiani"
+"Source" = "https://github.com/mahdikiani/fastapi-mongo-base-app"
+
+[tool.setuptools]
+package-data = {"usso" = ["*.dat"]}
