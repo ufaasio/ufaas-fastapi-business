@@ -2,13 +2,13 @@ import uuid
 from typing import Any, Generic, Type, TypeVar
 
 import singleton
-from .handlers import create_dto
-from .schemas import BaseEntitySchema, PaginatedResponse
 from core.exceptions import BaseHTTPException
 from fastapi import APIRouter, BackgroundTasks, Query, Request
 from server.config import Settings
 
+from .handlers import create_dto
 from .models import BaseEntity, BaseEntityTaskMixin
+from .schemas import BaseEntitySchema, PaginatedResponse
 
 # Define a type variable
 T = TypeVar("T", bound=BaseEntity)
@@ -192,6 +192,8 @@ class AbstractTaskRouter(AbstractBaseRouter[TE, TS]):
         self, model: Type[TE], user_dependency: Any, schema: TS, *args, **kwargs
     ):
         super().__init__(model, user_dependency, schema=schema, *args, **kwargs)
+
+    def config_routes(self, **kwargs):
         self.router.add_api_route(
             "/{uid:uuid}/start",
             self.start_item,

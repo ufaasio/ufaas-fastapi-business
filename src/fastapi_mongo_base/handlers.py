@@ -15,7 +15,7 @@ def create_dto(cls: OT):
         *,
         user_id: uuid.UUID = None,
         business_name: str = None,
-        **kwargs
+        **kwargs,
     ):
         form_data = await request.json()
 

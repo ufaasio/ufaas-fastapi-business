@@ -5,10 +5,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Callable, Coroutine, Literal, Union
 
-from .schemas import BaseEntitySchema
 from pydantic import BaseModel, Field
 from singleton import Singleton
 from utils import aionetwork, basic
+
+from .schemas import BaseEntitySchema
 
 
 class SignalRegistry(metaclass=Singleton):
