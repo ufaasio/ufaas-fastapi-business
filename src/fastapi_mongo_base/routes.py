@@ -1,3 +1,4 @@
+import asyncio
 import uuid
 from typing import Any, Generic, Type, TypeVar
 
@@ -112,7 +113,9 @@ class AbstractBaseRouter(Generic[T, TS], metaclass=singleton.Singleton):
     async def get_user(self, request: Request, *args, **kwargs):
         if self.user_dependency is None:
             return None
-        return await self.user_dependency(request)
+        if asyncio.iscoroutinefunction(self.user_dependency):
+            return await self.user_dependency(request)
+        return self.user_dependency(request)
 
     async def get_user_id(self, request: Request, *args, **kwargs):
         user = await self.get_user(request)

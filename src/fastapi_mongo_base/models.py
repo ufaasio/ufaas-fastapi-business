@@ -29,7 +29,7 @@ class BaseEntity(BaseEntitySchema, Document):
         @classmethod
         def is_abstract(cls):
             # Use `__dict__` to check if `__abstract__` is defined in the class itself
-            return '__abstract__' in cls.__dict__ and cls.__dict__['__abstract__']
+            return "__abstract__" in cls.__dict__ and cls.__dict__["__abstract__"]
 
     @before_event([Insert, Replace, Save, SaveChanges, Update])
     async def pre_save(self):
