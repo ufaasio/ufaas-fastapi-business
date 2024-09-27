@@ -4,7 +4,14 @@ from datetime import datetime
 from beanie import Document, Insert, Replace, Save, SaveChanges, Update, before_event
 from pydantic import ConfigDict
 from pymongo import ASCENDING, IndexModel
-from server.config import Settings
+
+try:
+    from server.config import Settings
+except ImportError:
+
+    class Settings:
+        page_max_limit = 100
+
 
 from .schemas import (
     BaseEntitySchema,

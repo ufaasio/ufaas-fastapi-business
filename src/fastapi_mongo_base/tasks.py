@@ -7,7 +7,9 @@ from typing import Any, Callable, Coroutine, Literal, Union
 
 from pydantic import BaseModel, Field
 from singleton import Singleton
+
 from utils import aionetwork, basic
+
 
 from .schemas import BaseEntitySchema
 
@@ -90,10 +92,13 @@ class TaskReferenceList(BaseModel):
 
 
 class TaskStatusEnum(str, Enum):
+    none = "null"
     draft = "draft"
     init = "init"
     processing = "processing"
+    paused = "paused"
     completed = "completed"
+    done = "done"
     error = "error"
 
 
