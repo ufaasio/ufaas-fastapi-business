@@ -10,7 +10,6 @@ from singleton import Singleton
 
 from utils import aionetwork, basic
 
-
 from .schemas import BaseEntitySchema
 
 
