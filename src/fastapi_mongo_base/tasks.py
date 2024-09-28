@@ -101,7 +101,7 @@ class TaskReferenceList(BaseModel):
 
 
 class TaskMixin(BaseModel):
-    task_status: Literal["draft", "init", "processing", "completed", "error"] = "draft"
+    task_status: TaskStatusEnum = "draft"
     task_report: str | None = None
     task_progress: int = -1
     task_logs: list[TaskLogRecord] = []
