@@ -7,6 +7,7 @@ from typing import Any, Callable, Coroutine, Literal, Union
 
 from pydantic import BaseModel, Field
 from singleton import Singleton
+import json_advanced as json
 try:
     from utils import aionetwork, basic
 except ImportError:
@@ -126,19 +127,24 @@ class TaskMixin(BaseModel):
 
     @classmethod
     async def emit_signals(cls, task_instance, **kwargs):
+        webhook_signals = []
         if task_instance.meta_data:
             webhook = task_instance.meta_data.get(
                 "webhook"
             ) or task_instance.meta_data.get("webhook_url")
-            webhook_signals = [
-                aionetwork.aio_request(
-                    method="post",
-                    url=webhook,
-                    data=task_instance.model_dump_json(),
+            if webhook:
+                task_dict = task_instance.model_dump()
+                task_dict.update({"task_type": task_instance.__class__.__name__})
+                task_dict.update(kwargs)
+                webhook_signals.append(
+                    basic.try_except_wrapper(aionetwork.aio_request)(
+                        method="post",
+                        url=webhook,
+                        headers={"Content-Type": "application/json"},
+                        data=json.dumps(task_dict),
+                        raise_exception=False,
+                    )
                 )
-            ]
-        else:
-            webhook_signals = []
 
         signals = webhook_signals + [
             (
