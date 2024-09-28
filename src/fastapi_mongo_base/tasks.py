@@ -229,3 +229,23 @@ class TaskMixin(BaseModel):
             await asyncio.gather(self.save(), self.emit_signals(self))
         except Exception as e:
             logging.error(f"An error occurred: {e}")
+
+    async def update_and_emit(self, **kwargs):
+        if kwargs.get("task_status") in [
+            TaskStatusEnum.done,
+            TaskStatusEnum.error,
+            TaskStatusEnum.completed,
+        ]:
+            kwargs["task_progress"] = kwargs.get("task_progress", 100)
+            # kwargs["task_report"] = kwargs.get("task_report")
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        if kwargs.get("task_report"):
+            await self.add_log(
+                TaskLogRecord(
+                    task_status=self.task_status,
+                    message=kwargs["task_report"],
+                ),
+                emit=False,
+            )
+        await self.save_and_emit()
