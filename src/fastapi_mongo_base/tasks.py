@@ -120,7 +120,9 @@ class TaskMixin(BaseModel):
 
     @field_serializer("task_status")
     def serialize_task_status(self, value):
-        return value.value
+        if isinstance(value, TaskStatusEnum):
+            return value.value
+        return value
 
     @classmethod
     def signals(cls):
