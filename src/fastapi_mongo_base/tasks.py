@@ -113,7 +113,7 @@ class TaskMixin(BaseModel):
     task_references: TaskReferenceList | None = None
 
     @field_validator("task_status", mode="before")
-    def validate_task_status(self, value):
+    def validate_task_status(cls, value):
         if isinstance(value, str):
             return TaskStatusEnum(value)
         return value
