@@ -7,10 +7,20 @@ from typing import Any, Callable, Coroutine, Literal, Union
 
 from pydantic import BaseModel, Field
 from singleton import Singleton
-
 from utils import aionetwork, basic
 
 from .schemas import BaseEntitySchema
+
+
+class TaskStatusEnum(str, Enum):
+    none = "null"
+    draft = "draft"
+    init = "init"
+    processing = "processing"
+    paused = "paused"
+    completed = "completed"
+    done = "done"
+    error = "error"
 
 
 class SignalRegistry(metaclass=Singleton):
@@ -24,7 +34,7 @@ class SignalRegistry(metaclass=Singleton):
 class TaskLogRecord(BaseModel):
     reported_at: datetime = Field(default_factory=datetime.now)
     message: str
-    task_status: Literal["draft", "init", "processing", "completed", "error"]
+    task_status: TaskStatusEnum
     duration: int = 0
     data: dict | None = None
 
@@ -90,17 +100,6 @@ class TaskReferenceList(BaseModel):
                 await asyncio.gather(*[task.start_processing() for task in task_items])
 
 
-class TaskStatusEnum(str, Enum):
-    none = "null"
-    draft = "draft"
-    init = "init"
-    processing = "processing"
-    paused = "paused"
-    completed = "completed"
-    done = "done"
-    error = "error"
-
-
 class TaskMixin(BaseModel):
     task_status: Literal["draft", "init", "processing", "completed", "error"] = "draft"
     task_report: str | None = None
@@ -151,7 +150,7 @@ class TaskMixin(BaseModel):
 
     async def save_status(
         self,
-        status: Literal["draft", "init", "processing", "done", "error"],
+        status: TaskStatusEnum,
         **kwargs,
     ):
         self.task_status = status
