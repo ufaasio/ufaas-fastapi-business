@@ -209,7 +209,7 @@ class AbstractTaskRouter(AbstractBaseRouter[TE, TS]):
 
     def config_routes(self, **kwargs):
         super().config_routes(**kwargs)
-        
+
         self.router.add_api_route(
             "/{uid:uuid}/start",
             self.start_item,
@@ -217,13 +217,14 @@ class AbstractTaskRouter(AbstractBaseRouter[TE, TS]):
             response_model=self.retrieve_response_schema,
         )
 
-    async def create_item(self, request: Request, background_tasks: BackgroundTasks):
-        item: TE = await super().create_item(request)
-    
+    async def create_item(
+        self, request: Request, data: dict, background_tasks: BackgroundTasks
+    ):
+        item: TE = await super().create_item(request, data)
+
         if item.task_status == "init":
             background_tasks.add_task(item.start_processing)
         return item
-
 
     async def start_item(
         self, request: Request, uid: uuid.UUID, background_tasks: BackgroundTasks
