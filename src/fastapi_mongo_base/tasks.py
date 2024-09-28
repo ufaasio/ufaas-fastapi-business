@@ -6,7 +6,7 @@ from enum import Enum
 from typing import Any, Callable, Coroutine, Literal, Union
 
 import json_advanced as json
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
 from singleton import Singleton
 
 try:
@@ -106,11 +106,15 @@ class TaskReferenceList(BaseModel):
 
 
 class TaskMixin(BaseModel):
-    task_status: TaskStatusEnum = "draft"
+    task_status: TaskStatusEnum = TaskStatusEnum.draft
     task_report: str | None = None
     task_progress: int = -1
     task_logs: list[TaskLogRecord] = []
     task_references: TaskReferenceList | None = None
+
+    @field_serializer('task_status')
+    def serialize_task_status(self, value):
+        return value.value
 
     @classmethod
     def signals(cls):
