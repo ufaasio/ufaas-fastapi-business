@@ -208,6 +208,8 @@ class AbstractTaskRouter(AbstractBaseRouter[TE, TS]):
         super().__init__(model, user_dependency, schema=schema, *args, **kwargs)
 
     def config_routes(self, **kwargs):
+        super().config_routes(**kwargs)
+        
         self.router.add_api_route(
             "/{uid:uuid}/start",
             self.start_item,
