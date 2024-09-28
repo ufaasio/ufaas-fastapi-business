@@ -5,9 +5,10 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Callable, Coroutine, Literal, Union
 
+import json_advanced as json
 from pydantic import BaseModel, Field
 from singleton import Singleton
-import json_advanced as json
+
 try:
     from utils import aionetwork, basic
 except ImportError:
@@ -126,7 +127,18 @@ class TaskMixin(BaseModel):
         cls.signals().append(signal)
 
     @classmethod
-    async def emit_signals(cls, task_instance, **kwargs):
+    async def emit_signals(cls, task_instance: "TaskMixin", **kwargs):
+        async def webhook_call(*args, **kwargs):
+            try:
+                await aionetwork.aio_request(*args, **kwargs)
+            except Exception as e:
+                await task_instance.save_report(
+                    f"An error occurred in webhook_call: {e}", emit=False
+                )
+                await task_instance.save()
+                logging.error(f"An error occurred in webhook_call: {e}")
+                return None
+
         webhook_signals = []
         if task_instance.meta_data:
             webhook = task_instance.meta_data.get(
@@ -137,12 +149,11 @@ class TaskMixin(BaseModel):
                 task_dict.update({"task_type": task_instance.__class__.__name__})
                 task_dict.update(kwargs)
                 webhook_signals.append(
-                    basic.try_except_wrapper(aionetwork.aio_request)(
+                    webhook_call(
                         method="post",
                         url=webhook,
                         headers={"Content-Type": "application/json"},
                         data=json.dumps(task_dict),
-                        raise_exception=False,
                     )
                 )
 

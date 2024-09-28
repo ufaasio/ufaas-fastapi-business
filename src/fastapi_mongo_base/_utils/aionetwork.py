@@ -23,7 +23,7 @@ async def aio_request_session(
         url = f"https://{url}"
 
     raise_exception = kwargs.pop("raise_exception", True)
-    
+
     async with session.request(method, url, **kwargs) as response:
         if not response.ok:
             logging.error(
