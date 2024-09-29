@@ -187,6 +187,7 @@ class BaseEntity(BaseEntitySchema, Document):
     @classmethod
     async def delete_item(cls, item: "BaseEntity"):
         item.is_deleted = True
+        item.deleted_at = datetime.now()
         await item.save()
         return item
 
