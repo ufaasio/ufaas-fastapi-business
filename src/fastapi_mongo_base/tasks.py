@@ -41,7 +41,7 @@ class TaskLogRecord(BaseModel):
     message: str
     task_status: TaskStatusEnum
     duration: int = 0
-    data: dict | None = None
+    # data: dict | None = None
 
     def __eq__(self, other):
         if isinstance(other, TaskLogRecord):
@@ -50,7 +50,7 @@ class TaskLogRecord(BaseModel):
                 and self.message == other.message
                 and self.task_status == other.task_status
                 and self.duration == other.duration
-                and self.data == other.data
+                # and self.data == other.data
             )
         return False
 
