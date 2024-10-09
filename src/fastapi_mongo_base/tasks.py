@@ -27,6 +27,10 @@ class TaskStatusEnum(str, Enum):
     done = "done"
     error = "error"
 
+    @property
+    def is_done(self):
+        return self in [TaskStatusEnum.done, TaskStatusEnum.error, TaskStatusEnum.completed]
+
 
 class SignalRegistry(metaclass=Singleton):
     def __init__(self):
