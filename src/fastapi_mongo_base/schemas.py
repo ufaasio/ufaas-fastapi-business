@@ -20,6 +20,12 @@ class BaseEntitySchema(CoreEntitySchema):
         default_factory=uuid.uuid4, json_schema_extra={"index": True, "unique": True}
     )
 
+    @property
+    def item_url(self):
+        return (
+            f"https://{Settings.root_url}/{self.__class__.__name__.lower()}/{self.uid}"
+        )
+
     @classmethod
     def create_exclude_set(cls) -> list[str]:
         return ["uid", "created_at", "updated_at", "is_deleted"]

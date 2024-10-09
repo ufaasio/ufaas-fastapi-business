@@ -42,12 +42,6 @@ class BaseEntity(BaseEntitySchema, Document):
     async def pre_save(self):
         self.updated_at = datetime.now()
 
-    @property
-    def item_url(self):
-        return (
-            f"https://{Settings.root_url}/{self.__class__.__name__.lower()}/{self.uid}"
-        )
-
     @classmethod
     def get_query(
         cls,
