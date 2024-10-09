@@ -30,7 +30,7 @@ class BaseEntitySchema(CoreEntitySchema):
     @property
     def item_url(self):
         return (
-            f"https://{Settings.root_url}/{self.__class__.__name__.lower()}/{self.uid}"
+            f"https://{Settings.root_url}/{self.__class__.__name__.lower()}s/{self.uid}"
         )
 
     @classmethod
