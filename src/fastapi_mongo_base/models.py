@@ -10,7 +10,6 @@ try:
 except ImportError:
     class Settings:
         page_max_limit = 100
-        root_url = "localhost:8000"
 
 
 from .schemas import (

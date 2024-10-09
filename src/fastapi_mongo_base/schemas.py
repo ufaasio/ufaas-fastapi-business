@@ -5,6 +5,13 @@ from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel, Field
 
+try:
+    from server.config import Settings
+except ImportError:
+
+    class Settings:
+        root_url = "localhost:8000"
+
 
 class CoreEntitySchema(BaseModel):
     created_at: datetime = Field(
