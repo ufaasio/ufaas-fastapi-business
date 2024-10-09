@@ -8,9 +8,9 @@ from pymongo import ASCENDING, IndexModel
 try:
     from server.config import Settings
 except ImportError:
-
     class Settings:
         page_max_limit = 100
+        root_url = "localhost:8000"
 
 
 from .schemas import (
@@ -41,6 +41,12 @@ class BaseEntity(BaseEntitySchema, Document):
     @before_event([Insert, Replace, Save, SaveChanges, Update])
     async def pre_save(self):
         self.updated_at = datetime.now()
+
+    @property
+    def item_url(self):
+        return (
+            f"https://{Settings.root_url}/{self.__class__.__name__.lower()}/{self.uid}"
+        )
 
     @classmethod
     def get_query(

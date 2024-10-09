@@ -112,6 +112,10 @@ class TaskMixin(BaseModel):
     task_logs: list[TaskLogRecord] = []
     task_references: TaskReferenceList | None = None
 
+    @property
+    def webhook_url(self):
+        return f"{self.item_url}/webhook"
+
     @field_validator("task_status", mode="before")
     def validate_task_status(cls, value):
         if isinstance(value, str):
