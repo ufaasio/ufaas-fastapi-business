@@ -3,6 +3,7 @@ from io import BytesIO
 
 import aiofiles
 import aiohttp
+import aiohttp.client_exceptions
 
 
 async def aio_request(*, method: str = "get", url: str = None, **kwargs) -> dict:
@@ -23,6 +24,7 @@ async def aio_request_session(
         url = f"https://{url}"
 
     raise_exception = kwargs.pop("raise_exception", True)
+    raise_exception_json = kwargs.pop("raise_exception_json", False)
 
     async with session.request(method, url, **kwargs) as response:
         if not response.ok:
@@ -32,7 +34,14 @@ async def aio_request_session(
             )
         if raise_exception:
             response.raise_for_status()
-        return await response.json()
+
+        try:
+            res = await response.json()
+        except aiohttp.client_exceptions.ContentTypeError:
+            if raise_exception_json:
+                raise
+            res = await response.text()
+        return res
 
 
 async def aio_request_binary(

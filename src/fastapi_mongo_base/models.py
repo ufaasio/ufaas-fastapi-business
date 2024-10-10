@@ -8,6 +8,7 @@ from pymongo import ASCENDING, IndexModel
 try:
     from server.config import Settings
 except ImportError:
+
     class Settings:
         page_max_limit = 100
 
@@ -199,7 +200,7 @@ class OwnedEntity(OwnedEntitySchema, BaseEntity):
 
     @classmethod
     async def get_item(cls, uid, user_id, *args, **kwargs) -> "OwnedEntity":
-        if user_id == None:
+        if user_id == None and kwargs.get("ignore_user_id") != True:
             raise ValueError("user_id is required")
         return await super().get_item(uid, user_id=user_id, *args, **kwargs)
 

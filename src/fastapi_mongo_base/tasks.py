@@ -9,10 +9,7 @@ import json_advanced as json
 from pydantic import BaseModel, Field, field_serializer, field_validator
 from singleton import Singleton
 
-try:
-    from utils import aionetwork, basic
-except ImportError:
-    from _utils import aionetwork, basic
+from _utils import aionetwork, basic
 
 from .schemas import BaseEntitySchema
 
