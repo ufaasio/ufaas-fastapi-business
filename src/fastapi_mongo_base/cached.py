@@ -1,8 +1,8 @@
 import json
 import logging
 import uuid
-from _utils import bsontools
 
+from _utils import bsontools
 from pymongo import UpdateOne
 
 from .models import BaseEntity
