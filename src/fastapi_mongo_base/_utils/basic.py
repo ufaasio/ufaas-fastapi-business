@@ -19,13 +19,19 @@ def try_except_wrapper(func):
             return await asyncio.to_thread(func, *args, **kwargs)
         except Exception as e:
             import traceback
+            import inspect
+
+            func_name = func.__name__
+            if len(args) > 0:
+                if inspect.ismethod(func) or inspect.isfunction(func):
+                    if hasattr(args[0], "__class__"):
+                        class_name = args[0].__class__.__name__
+                        func_name = f"{class_name}.{func_name}"
 
             traceback_str = "".join(traceback.format_tb(e.__traceback__))
-            logging.error(
-                f"An error occurred in {func.__name__}:\n{traceback_str}\n{e}"
-            )
+            logging.error(f"An error occurred in {func_name}:\n{traceback_str}\n{e}")
             return None
-
+    
     return wrapped_func
 
 
