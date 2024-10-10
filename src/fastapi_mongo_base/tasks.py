@@ -148,17 +148,6 @@ class TaskMixin(BaseModel):
 
     @classmethod
     async def emit_signals(cls, task_instance: "TaskMixin", **kwargs):
-        async def webhook_call(*args, **kwargs):
-            try:
-                await aionetwork.aio_request(*args, **kwargs)
-            except Exception as e:
-                await task_instance.save_report(
-                    f"An error occurred in webhook_call: {e}", emit=False
-                )
-                await task_instance.save()
-                logging.error(f"An error occurred in webhook_call: {e}")
-                return None
-
         webhook_signals = []
         if task_instance.meta_data:
             webhook = task_instance.meta_data.get(
@@ -169,7 +158,7 @@ class TaskMixin(BaseModel):
                 task_dict.update({"task_type": task_instance.__class__.__name__})
                 task_dict.update(kwargs)
                 webhook_signals.append(
-                    webhook_call(
+                    basic.try_except_wrapper(aionetwork.aio_request)(
                         method="post",
                         url=webhook,
                         headers={"Content-Type": "application/json"},
@@ -234,12 +223,10 @@ class TaskMixin(BaseModel):
 
         await self.task_references.list_processing()
 
+    @basic.try_except_wrapper
     async def save_and_emit(self):
-        try:
-            await asyncio.gather(self.save(), self.emit_signals(self))
-        except Exception as e:
-            logging.error(f"An error occurred: {e}")
-
+        await asyncio.gather(self.save(), self.emit_signals(self))
+        
     async def update_and_emit(self, **kwargs):
         if kwargs.get("task_status") in [
             TaskStatusEnum.done,
