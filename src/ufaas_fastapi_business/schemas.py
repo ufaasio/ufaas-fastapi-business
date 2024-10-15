@@ -58,11 +58,17 @@ class BusinessSchema(OwnedEntitySchema):
 
     @property
     def refresh_url(self):
+        refresh_url = self.cls_refresh_url()
+        if refresh_url:
+            return refresh_url
+        return f"{self.config.sso_url}/auth/refresh"
+
+    @classmethod
+    def cls_refresh_url(cls):
         if hasattr(Settings, "sso_refresh_url"):
             return Settings.sso_refresh_url
         if hasattr(Settings, "USSO_URL"):
             return f"{Settings.USSO_URL}/auth/refresh"
-        return f"{self.config.sso_url}/auth/refresh"
 
 
 class AppAuth(BaseModel):

@@ -50,7 +50,7 @@ class Business(BusinessSchema):
         if uid:
             params["uid"] = str(uid)
 
-        access_token = await cls().get_access_token()
+        access_token = await cls.cls_access_token()
         headers = {"Authorization": f"Bearer {access_token}"}
         return await aio_request(
             method="get",
@@ -174,22 +174,9 @@ class Business(BusinessSchema):
     async def get_access_token(self):
         # TODO add caching
 
-        if hasattr(Settings, "USSO_API_KEY"):
-            client = AsyncUssoSession(
-                sso_refresh_url=self.refresh_url,
-                api_key=Settings.USSO_API_KEY,
-                user_id=getattr(Settings, "USSO_USER_ID", None),
-            )
-            await client._refresh()
-            return client.access_token
-
-        if hasattr(Settings, "USSO_REFRESH_TOKEN"):
-            client = AsyncUssoSession(
-                sso_refresh_url=self.refresh_url,
-                refresh_token=Settings.USSO_REFRESH_TOKEN,
-            )
-            await client._refresh()
-            return client.access_token
+        access_token = await self.cls_access_token()
+        if access_token:
+            return access_token
 
         if hasattr(Settings, "app_id") and hasattr(Settings, "app_secret"):
             scopes = json.loads(getattr(Settings, "app_scopes", "[]"))
@@ -206,3 +193,22 @@ class Business(BusinessSchema):
             return response_data.get("access_token")
 
         raise ValueError("USSO_API_KEY or USSO_REFRESH_TOKEN or app_id/app_secret are not set in settings.")
+
+    @classmethod
+    async def cls_access_token(cls):
+        if hasattr(Settings, "USSO_API_KEY") and cls.cls_refresh_url():
+            client = AsyncUssoSession(
+                sso_refresh_url=cls.cls_refresh_url(),
+                api_key=Settings.USSO_API_KEY,
+                user_id=getattr(Settings, "USSO_USER_ID", None),
+            )
+            await client._refresh()
+            return client.access_token
+
+        if hasattr(Settings, "USSO_REFRESH_TOKEN") and cls.cls_refresh_url():
+            client = AsyncUssoSession(
+                sso_refresh_url=cls.cls_refresh_url(),
+                refresh_token=Settings.USSO_REFRESH_TOKEN,
+            )
+            await client._refresh()
+            return client.access_token
