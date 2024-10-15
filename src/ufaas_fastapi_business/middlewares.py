@@ -44,7 +44,7 @@ async def business_or_user(
     request: Request,
 ) -> tuple[Literal["Business", "User"], UserData]:
     business = await get_business(request)
-    user = await Usso(jwt_secret=business.config.jwt_secret).jwt_access_security(
+    user = await Usso(jwt_config=business.config.jwt_config).jwt_access_security(
         request
     )
 
@@ -65,7 +65,7 @@ async def authorization_middleware(request: Request) -> AuthorizationData:
 
     authorization.business = await get_business(request)
     authorization.user = await Usso(
-        jwt_secret=authorization.business.config.jwt_secret
+        jwt_config=authorization.business.config.jwt_config
     ).jwt_access_security(request)
 
     if authorization.business.user_id == authorization.user.uid:
