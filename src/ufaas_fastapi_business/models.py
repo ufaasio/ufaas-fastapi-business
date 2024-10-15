@@ -1,8 +1,10 @@
+import json
 import uuid
 
 from aiocache import cached
 from usso.async_session import AsyncUssoSession
 
+from fastapi_mongo_base._utils.aionetwork import aio_request
 from fastapi_mongo_base._utils.basic import try_except_wrapper
 
 from .schemas import BusinessSchema, AppAuth
@@ -12,13 +14,9 @@ try:
 except ImportError:
 
     class Settings:
-        USSO_API_KEY = "api_key"
-        USSO_URL = "https://usso.io"
-        USSO_USER_ID = uuid.UUID("00000000-0000-0000-0000-000000000000")
-        business_domains_url = f"{USSO_URL}/business/domains"
-        root_url = "ufaas.io"
-        app_id = "app_id"
-        app_secret = "app_secret"
+        business_domains_url = (
+            "https://business.ufaas.io/api/v1/apps/business/businesses/"
+        )
 
 
 class Business(BusinessSchema):
@@ -52,16 +50,14 @@ class Business(BusinessSchema):
         if uid:
             params["uid"] = str(uid)
 
-        async with AsyncUssoSession(
-            api_key=Settings.USSO_API_KEY,
-            sso_refresh_url=f"{Settings.USSO_URL}/auth/refresh",
-            user_id=Settings.USSO_USER_ID,
-        ) as client:
-            async with client.get(
-                url=Settings.business_domains_url, params=params
-            ) as response:
-                response.raise_for_status()
-                return await response.json()
+        access_token = await cls().get_access_token()
+        headers = {"Authorization": f"Bearer {access_token}"}
+        return await aio_request(
+            method="get",
+            url=Settings.business_domains_url,
+            params=params,
+            headers=headers,
+        )
 
     @classmethod
     async def get_query(
@@ -174,19 +170,39 @@ class Business(BusinessSchema):
         business = BusinessSchema(**businesses_list[0])
         return business
 
+    @cached(ttl=getattr(Settings, "app_auth_expiry", 60))
     async def get_access_token(self):
-        from fastapi_mongo_base._utils.aionetwork import aio_request
-
-        # TODO set scopes
         # TODO add caching
-        app_auth = AppAuth(
-            app_id=Settings.app_id,
-            scopes=[],
-            sso_url=self.config.sso_url,
-        )
-        app_auth.secret = app_auth.get_secret(app_secret=Settings.app_secret)
 
-        response_data: dict = await aio_request(
-            method="post", url=self.config.core_sso_url, json=app_auth.model_dump()
-        )
-        return response_data.get("access_token")
+        if hasattr(Settings, "USSO_API_KEY"):
+            client = AsyncUssoSession(
+                sso_refresh_url=self.refresh_url,
+                api_key=Settings.USSO_API_KEY,
+                user_id=getattr(Settings, "USSO_USER_ID", None),
+            )
+            await client._refresh()
+            return client.access_token
+
+        if hasattr(Settings, "USSO_REFRESH_TOKEN"):
+            client = AsyncUssoSession(
+                sso_refresh_url=self.refresh_url,
+                refresh_token=Settings.USSO_REFRESH_TOKEN,
+            )
+            await client._refresh()
+            return client.access_token
+
+        if hasattr(Settings, "app_id") and hasattr(Settings, "app_secret"):
+            scopes = json.loads(getattr(Settings, "app_scopes", "[]"))
+            app_auth = AppAuth(
+                app_id=Settings.app_id,
+                scopes=scopes,
+                sso_url=self.config.core_sso_url,
+            )
+            app_auth.secret = app_auth.get_secret(app_secret=Settings.app_secret)
+
+            response_data: dict = await aio_request(
+                method="post", url=self.config.core_sso_url, json=app_auth.model_dump()
+            )
+            return response_data.get("access_token")
+
+        raise ValueError("USSO_API_KEY or USSO_REFRESH_TOKEN or app_id/app_secret are not set in settings.")

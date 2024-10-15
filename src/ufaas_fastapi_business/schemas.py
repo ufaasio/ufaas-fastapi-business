@@ -4,6 +4,7 @@ import json
 import uuid
 from datetime import datetime
 from typing import Any
+from urllib.parse import urlparse
 
 from pydantic import BaseModel, model_validator, Field, field_validator
 from usso.fastapi.auth_middleware import JWTConfig
@@ -16,14 +17,17 @@ except ImportError:
 
     class Settings:
         JWT_CONFIG = '{"jwk_url": "https://usso.io/website/jwks.json","type": "RS256","header": {"type": "Cookie", "name": "usso_access_token"} }'
-        root_url = "ufaas.io"
 
 
 class Config(BaseModel):
-    core_url: str = "https://core.ufaas.io/"
-    api_os_url: str = "https://core.ufaas.io/api/v1/apps"
-    sso_url: str = "https://sso.ufaas.io/app-auth/access"
-    core_sso_url: str = "https://sso.ufaas.io/app-auth/access"
+    core_url: str = getattr(Settings, "core_url", "https://core.ufaas.io/")
+    api_os_url: str = getattr(
+        Settings, "api_os_url", "https://core.ufaas.io/api/v1/apps"
+    )
+    sso_url: str = getattr(Settings, "sso_url", "https://sso.ufaas.io/")
+    core_sso_url: str = getattr(
+        Settings, "core_sso_url", "https://sso.ufaas.io/app-auth/access"
+    )
 
     allowed_origins: list[str] = []
     jwt_config: JWTConfig = JWTConfig(**json.loads(Settings.JWT_CONFIG))
@@ -43,10 +47,22 @@ class BusinessSchema(OwnedEntitySchema):
     @model_validator(mode="before")
     def validate_domain(cls, data: dict):
         if not data.get("domain"):
-            business_name_domain = f"{data.get('name')}.{Settings.root_url}"
+            config = data.get("config", Config())
+            if isinstance(config, dict):
+                config = Config(**config)
+            netloc = urlparse(config.core_url).netloc
+            business_name_domain = f"{data.get('name')}.{netloc}"
             data["domain"] = business_name_domain
 
         return data
+
+    @property
+    def refresh_url(self):
+        if hasattr(Settings, "sso_refresh_url"):
+            return Settings.sso_refresh_url
+        if hasattr(Settings, "USSO_URL"):
+            return f"{Settings.USSO_URL}/auth/refresh"
+        return f"{self.config.sso_url}/auth/refresh"
 
 
 class AppAuth(BaseModel):
@@ -59,7 +75,7 @@ class AppAuth(BaseModel):
 
     @field_validator("timestamp")
     def check_timestamp(cls, v: int):
-        if datetime.now().timestamp() - v > 60:
+        if datetime.now().timestamp() - v > getattr(Settings, "app_auth_expiry", 60):
             raise ValueError("Timestamp expired.")
         return v
 
