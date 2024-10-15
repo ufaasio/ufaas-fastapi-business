@@ -202,7 +202,7 @@ class Business(BusinessSchema):
                 api_key=Settings.USSO_API_KEY,
                 user_id=getattr(Settings, "USSO_USER_ID", None),
             )
-            await client._refresh()
+            await client._ensure_valid_token()
             return client.access_token
 
         if hasattr(Settings, "USSO_REFRESH_TOKEN") and cls.cls_refresh_url():
@@ -210,5 +210,5 @@ class Business(BusinessSchema):
                 sso_refresh_url=cls.cls_refresh_url(),
                 refresh_token=Settings.USSO_REFRESH_TOKEN,
             )
-            await client._refresh()
+            await client._ensure_valid_token()
             return client.access_token
