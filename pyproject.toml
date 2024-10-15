@@ -3,13 +3,13 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ufaas-fastapi-mongo-business"
+name = "ufaas-fastapi-business"
 version = "0.1.0"
 description = "A simple boilerplate application, including models and schemas and abstract router, for FastAPI with MongoDB for Ufaas extensions with business logic"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {file = "LICENSE.txt"}
-keywords = ["fastapi", "mongodb", "beanie", "ufaas"]
+keywords = ["fastapi", "ufaas"]
 authors = [
   {name = "Mahdi Kiani", email = "mahdikiany@gmail.com"}
 ]
