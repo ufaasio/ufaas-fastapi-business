@@ -1,15 +1,12 @@
 import hashlib
 import hmac
 import json
-import uuid
 from datetime import datetime
-from typing import Any
 from urllib.parse import urlparse
 
-from pydantic import BaseModel, model_validator, Field, field_validator
-from usso.fastapi.auth_middleware import JWTConfig
-
 from fastapi_mongo_base.schemas import OwnedEntitySchema
+from pydantic import BaseModel, Field, field_validator, model_validator
+from usso.fastapi.auth_middleware import JWTConfig
 
 try:
     from server.config import Settings
