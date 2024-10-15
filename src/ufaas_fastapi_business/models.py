@@ -5,7 +5,7 @@ from usso.async_session import AsyncUssoSession
 
 from fastapi_mongo_base._utils.basic import try_except_wrapper
 
-from .schemas import BusinessSchema
+from .schemas import BusinessSchema, AppAuth
 
 try:
     from server.config import Settings
@@ -17,6 +17,8 @@ except ImportError:
         USSO_USER_ID = uuid.UUID("00000000-0000-0000-0000-000000000000")
         business_domains_url = f"{USSO_URL}/business/domains"
         root_url = "ufaas.io"
+        app_id = "app_id"
+        app_secret = "app_secret"
 
 
 class Business(BusinessSchema):
@@ -171,3 +173,20 @@ class Business(BusinessSchema):
             return
         business = BusinessSchema(**businesses_list[0])
         return business
+
+    async def get_access_token(self):
+        from fastapi_mongo_base._utils.aionetwork import aio_request
+
+        # TODO set scopes
+        # TODO add caching
+        app_auth = AppAuth(
+            app_id=Settings.app_id,
+            scopes=[],
+            sso_url=self.config.sso_url,
+        )
+        app_auth.secret = app_auth.get_secret(app_secret=Settings.app_secret)
+
+        response_data: dict = await aio_request(
+            method="post", url=self.config.core_sso_url, json=app_auth.model_dump()
+        )
+        return response_data.get("access_token")
