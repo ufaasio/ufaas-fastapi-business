@@ -6,7 +6,7 @@ from fastapi_mongo_base._utils.aionetwork import aio_request
 from fastapi_mongo_base._utils.basic import try_except_wrapper
 from usso.async_session import AsyncUssoSession
 
-from .schemas import BusinessSchema
+from .schemas import BusinessSchema, AppAuth
 
 try:
     from server.config import Settings
