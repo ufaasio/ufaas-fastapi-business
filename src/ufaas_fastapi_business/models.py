@@ -49,7 +49,7 @@ class Business(BusinessSchema):
         if uid:
             params["uid"] = str(uid)
 
-        access_token = await cls.get_access_token()
+        access_token = await cls.cls_access_token()
         headers = {"Authorization": f"Bearer {access_token}"}
         return await aio_request(
             method="get",
@@ -171,7 +171,7 @@ class Business(BusinessSchema):
 
     @classmethod
     @cached(ttl=getattr(Settings, "app_auth_expiry", 60))
-    async def get_access_token(cls):
+    async def cls_access_token(cls):
         # TODO add caching
 
         if hasattr(Settings, "USSO_API_KEY") and cls.cls_refresh_url():
@@ -208,3 +208,22 @@ class Business(BusinessSchema):
         raise ValueError(
             "USSO_API_KEY or USSO_REFRESH_TOKEN or app_id/app_secret are not set in settings."
         )
+
+    @cached(ttl=getattr(Settings, "app_auth_expiry", 60))
+    async def get_access_token(self):
+        # TODO add caching
+        if hasattr(Settings, "app_id") and hasattr(Settings, "app_secret"):
+            scopes = json.loads(getattr(Settings, "app_scopes", "[]"))
+            app_auth = AppAuth(
+                app_id=Settings.app_id,
+                scopes=scopes,
+                sso_url=self.config.sso_url,
+            )
+            app_auth.secret = app_auth.get_secret(app_secret=Settings.app_secret)
+
+            response_data: dict = await aio_request(
+                method="post", url=self.config.core_sso_url, json=app_auth.model_dump()
+            )
+            return response_data.get("access_token")
+
+        return await self.cls_access_token()
