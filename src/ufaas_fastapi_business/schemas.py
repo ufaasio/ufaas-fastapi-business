@@ -37,6 +37,7 @@ class Config(BaseModel):
 class BusinessSchema(OwnedEntitySchema):
     name: str
     domain: str
+    main_domain: str | None = None
 
     description: str | None = None
     config: Config = Config()

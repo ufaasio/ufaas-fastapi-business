@@ -172,8 +172,6 @@ class Business(BusinessSchema):
     @classmethod
     @cached(ttl=getattr(Settings, "app_auth_expiry", 60))
     async def cls_access_token(cls):
-        # TODO add caching
-
         if hasattr(Settings, "USSO_API_KEY") and cls.cls_refresh_url():
             client = AsyncUssoSession(
                 sso_refresh_url=cls.cls_refresh_url(),
@@ -211,7 +209,6 @@ class Business(BusinessSchema):
 
     @cached(ttl=getattr(Settings, "app_auth_expiry", 60))
     async def get_access_token(self):
-        # TODO add caching
         if hasattr(Settings, "app_id") and hasattr(Settings, "app_secret"):
             scopes = json.loads(getattr(Settings, "app_scopes", "[]"))
             app_auth = AppAuth(
