@@ -59,11 +59,11 @@ async def authorization_middleware(
 
     authorization.business = await get_business(request)
     if anonymous_accepted:
-        authorization.user = await jwt_access_security_None(
+        authorization.user = jwt_access_security_None(
             request, jwt_config=authorization.business.config.jwt_config
         )
     else:
-        authorization.user = await jwt_access_security(
+        authorization.user = jwt_access_security(
             request, jwt_config=authorization.business.config.jwt_config
         )
 
