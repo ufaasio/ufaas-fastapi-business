@@ -130,6 +130,7 @@ class AbstractAuthRouter(AbstractBusinessBaseRouter[T, TS]):
 
     async def create_item(self, request: Request, data: dict):
         auth = await self.get_auth(request)
+        data.pop("user_id", None)
         item = self.model(
             business_name=auth.business.name,
             user_id=auth.user_id if auth.user_id else auth.user.uid,
