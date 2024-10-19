@@ -137,7 +137,7 @@ class AbstractAuthRouter(AbstractBusinessBaseRouter[T, TS]):
             **data,
         )
         await item.save()
-        return self.create_response_schema(**item.model_dump())
+        return item #self.create_response_schema(**item.model_dump())
 
     async def update_item(self, request: Request, uid: uuid.UUID, data: dict):
         auth = await self.get_auth(request)
