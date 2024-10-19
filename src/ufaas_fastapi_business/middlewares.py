@@ -2,10 +2,9 @@ import uuid
 from typing import Literal
 
 from fastapi import Request
-from proposal.u_sso.fastapi.integration import jwt_access_security_None
 from pydantic import BaseModel
 from usso import UserData
-from usso.fastapi import jwt_access_security
+from usso.fastapi import jwt_access_security, jwt_access_security_None
 
 from .models import Business
 
