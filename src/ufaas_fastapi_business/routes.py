@@ -23,11 +23,12 @@ TS = TypeVar("TS", bound=BusinessEntitySchema)
 
 
 class AbstractBusinessBaseRouter(AbstractBaseRouter[T, TS]):
+
     async def list_items(
         self,
         request: Request,
-        offset: int = 0,
-        limit: int = 10,
+        offset: int = Query(0, ge=0),
+        limit: int = Query(10, ge=1, le=Settings.page_max_limit),
         business: Business = Depends(get_business),
     ):
         user_id = await self.get_user_id(request)
@@ -61,6 +62,7 @@ class AbstractBusinessBaseRouter(AbstractBaseRouter[T, TS]):
     async def create_item(
         self,
         request: Request,
+        data: dict,
         business: Business = Depends(get_business),
     ):
         user_id = await self.get_user_id(request)
@@ -137,7 +139,7 @@ class AbstractAuthRouter(AbstractBusinessBaseRouter[T, TS]):
             **data,
         )
         await item.save()
-        return item #self.create_response_schema(**item.model_dump())
+        return item  # self.create_response_schema(**item.model_dump())
 
     async def update_item(self, request: Request, uid: uuid.UUID, data: dict):
         auth = await self.get_auth(request)
