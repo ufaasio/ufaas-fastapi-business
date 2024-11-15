@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 import json
+import uuid
 from datetime import datetime
 from urllib.parse import urlparse
 
@@ -29,6 +30,7 @@ class Config(BaseModel):
     allowed_origins: list[str] = []
     jwt_config: JWTConfig = JWTConfig(**json.loads(Settings.JWT_CONFIG))
     default_currency: str = "IRR"
+    wallet_id: uuid.UUID | None = None
 
     def __hash__(self):
         return hash(self.model_dump_json())
