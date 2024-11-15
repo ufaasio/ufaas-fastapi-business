@@ -69,7 +69,16 @@ async def authorization_middleware(
 
     if authorization.user and authorization.user.authentication_method == "app":
         authorization.issuer_type = "App"
-        authorization.user_id = authorization.user.data.get("app_id")
+        authorization.user_id = (
+            (
+                request.query_params.get("user_id")
+                or request.path_params.get("user_id")
+                or (await get_request_body_dict(request)).get("user_id")
+                or authorization.user.data.get("app_id")
+            )
+            if True
+            else authorization.user.data.get("app_id")
+        )  # check scopes
         authorization.app_id = authorization.user.data.get("app_id")
         authorization.scopes = authorization.user.data.get("scopes")
 
