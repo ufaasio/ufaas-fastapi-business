@@ -12,10 +12,7 @@ from usso.core import JWTConfig
 try:
     from server.config import Settings
 except ImportError:
-
-    class Settings:
-        JWT_CONFIG = '{"jwk_url": "https://usso.io/website/jwks.json","type": "RS256","header": {"type": "Cookie", "name": "usso_access_token"} }'
-
+    from .core.config import Settings
 
 class Config(BaseModel):
     core_url: str = getattr(Settings, "core_url", "https://core.ufaas.io/")

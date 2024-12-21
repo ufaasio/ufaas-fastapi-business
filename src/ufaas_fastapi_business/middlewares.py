@@ -11,7 +11,7 @@ from .models import Business
 try:
     from core.exceptions import BaseHTTPException
 except ImportError:
-    from fastapi_mongo_base.exceptions import BaseHTTPException
+    from fastapi_mongo_base.core.exceptions import BaseHTTPException
 
 
 class AuthorizationData(BaseModel):
