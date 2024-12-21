@@ -14,6 +14,7 @@ try:
 except ImportError:
     from .core.config import Settings
 
+
 class Config(BaseModel):
     core_url: str = getattr(Settings, "core_url", "https://core.ufaas.io/")
     api_os_url: str = getattr(
