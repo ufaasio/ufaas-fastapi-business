@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ufaas-fastapi-business"
-version = "0.4.0"
+version = "0.4.1"
 description = "A simple boilerplate application, including models and schemas and abstract router, for FastAPI with MongoDB for Ufaas extensions with business logic"
 readme = "README.md"
 requires-python = ">=3.9"
