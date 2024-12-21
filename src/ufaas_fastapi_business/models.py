@@ -170,19 +170,17 @@ class Business(BusinessSchema):
     async def cls_access_token(cls):
         if hasattr(Settings, "USSO_API_KEY") and cls.cls_refresh_url():
             client = AsyncUssoSession(
-                sso_refresh_url=cls.cls_refresh_url(),
-                api_key=Settings.USSO_API_KEY,
+                usso_refresh_url=cls.cls_refresh_url(),
+                usso_api_key=Settings.USSO_API_KEY,
                 user_id=getattr(Settings, "USSO_USER_ID", None),
             )
-            await client._ensure_valid_token()
             return client.access_token
 
         if hasattr(Settings, "USSO_REFRESH_TOKEN") and cls.cls_refresh_url():
             client = AsyncUssoSession(
-                sso_refresh_url=cls.cls_refresh_url(),
+                usso_refresh_url=cls.cls_refresh_url(),
                 refresh_token=Settings.USSO_REFRESH_TOKEN,
             )
-            await client._ensure_valid_token()
             return client.access_token
 
         if hasattr(Settings, "app_id") and hasattr(Settings, "app_secret"):
