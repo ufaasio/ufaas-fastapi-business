@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from typing import TypeVar
 
 from fastapi import Depends, Query, Request
@@ -28,6 +29,8 @@ class AbstractBusinessBaseRouter(AbstractBaseRouter[T, TS]):
         offset: int = Query(0, ge=0),
         limit: int = Query(10, ge=1, le=Settings.page_max_limit),
         business: Business = Depends(get_business),
+        created_at_from: datetime | None = None,
+        created_at_to: datetime | None = None,
     ):
         user_id = await self.get_user_id(request)
         limit = max(1, min(limit, Settings.page_max_limit))
@@ -37,6 +40,8 @@ class AbstractBusinessBaseRouter(AbstractBaseRouter[T, TS]):
             business_name=business.name,
             offset=offset,
             limit=limit,
+            created_at_from=created_at_from,
+            created_at_to=created_at_to,
         )
         items_in_schema = [self.list_item_schema(**item.model_dump()) for item in items]
 
