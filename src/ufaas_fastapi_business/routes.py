@@ -111,6 +111,8 @@ class AbstractAuthRouter(AbstractBusinessBaseRouter[T, TS]):
         request: Request,
         offset: int = Query(0, ge=0),
         limit: int = Query(10, ge=0, le=Settings.page_max_limit),
+        created_at_from: datetime | None = None,
+        created_at_to: datetime | None = None,
     ):
         auth = await self.get_auth(request)
         items, total = await self.model.list_total_combined(
@@ -118,6 +120,8 @@ class AbstractAuthRouter(AbstractBusinessBaseRouter[T, TS]):
             business_name=auth.business.name,
             offset=offset,
             limit=limit,
+            created_at_from=created_at_from,
+            created_at_to=created_at_to,
         )
 
         items_in_schema = [self.list_item_schema(**item.model_dump()) for item in items]
