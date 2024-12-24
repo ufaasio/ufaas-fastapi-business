@@ -113,6 +113,7 @@ class AbstractAuthRouter(AbstractBusinessBaseRouter[T, TS]):
         limit: int = Query(10, ge=0, le=Settings.page_max_limit),
         created_at_from: datetime | None = None,
         created_at_to: datetime | None = None,
+        
     ):
         auth = await self.get_auth(request)
         items, total = await self.model.list_total_combined(
