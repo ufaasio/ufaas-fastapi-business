@@ -1,3 +1,4 @@
+import os
 import json
 import uuid
 
@@ -168,18 +169,20 @@ class Business(BusinessSchema):
     @classmethod
     @cached(ttl=getattr(Settings, "app_auth_expiry", 60))
     async def cls_access_token(cls):
-        if hasattr(Settings, "USSO_API_KEY") and cls.cls_refresh_url():
+        if os.getenv("USSO_ADMIN_API_KEY") and cls.cls_refresh_url():
             client = AsyncUssoSession(
                 usso_refresh_url=cls.cls_refresh_url(),
-                usso_api_key=Settings.USSO_API_KEY,
+                usso_api_key=os.getenv("USSO_ADMIN_API_KEY"),
                 user_id=getattr(Settings, "USSO_USER_ID", None),
+                api_key=None,
             )
             return client.access_token
 
-        if hasattr(Settings, "USSO_REFRESH_TOKEN") and cls.cls_refresh_url():
+        if os.getenv("USSO_REFRESH_TOKEN") and cls.cls_refresh_url():
             client = AsyncUssoSession(
                 usso_refresh_url=cls.cls_refresh_url(),
-                refresh_token=Settings.USSO_REFRESH_TOKEN,
+                refresh_token=os.getenv("USSO_REFRESH_TOKEN"),
+                api_key=None,
             )
             return client.access_token
 
@@ -198,7 +201,7 @@ class Business(BusinessSchema):
             return response_data.get("access_token")
 
         raise ValueError(
-            "USSO_API_KEY or USSO_REFRESH_TOKEN or app_id/app_secret are not set in settings."
+            "USSO_ADMIN_API_KEY or USSO_REFRESH_TOKEN or app_id/app_secret are not set in settings."
         )
 
     @cached(ttl=getattr(Settings, "app_auth_expiry", 60))
