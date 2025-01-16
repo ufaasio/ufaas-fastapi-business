@@ -90,6 +90,7 @@ async def authorization_middleware(
             request.query_params.get("user_id")
             or request.path_params.get("user_id")
             or (await get_request_body_dict(request)).get("user_id")
+            or authorization.business.user_id
         )
     elif authorization.user:
         authorization.issuer_type = "User"
