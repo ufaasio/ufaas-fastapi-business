@@ -92,6 +92,7 @@ async def authorization_middleware(
             or (await get_request_body_dict(request)).get("user_id")
             or authorization.business.user_id
         )
+        authorization.user_id = uuid.UUID(authorization.user_id) if authorization.user_id else None
     elif authorization.user:
         authorization.issuer_type = "User"
         authorization.user_id = authorization.user.uid
