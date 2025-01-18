@@ -79,6 +79,11 @@ async def authorization_middleware(
             if authorization.issuer_type == "App"  # check scopes
             else authorization.user.data.get("app_id")
         )
+        authorization.user_id = (
+            uuid.UUID(authorization.user_id)
+            if authorization.user_id and isinstance(authorization.user_id, str)
+            else None
+        )
         authorization.app_id = authorization.user.data.get("app_id")
         authorization.scopes = authorization.user.data.get("scopes")
 
