@@ -1,13 +1,14 @@
 import uuid
 from datetime import datetime
-from typing import TypeVar
+from typing import Any, Literal, Type, TypeVar
 
 from fastapi import Depends, Query, Request
 from fastapi_mongo_base.handlers import create_dto
 from fastapi_mongo_base.models import BusinessEntity
 from fastapi_mongo_base.routes import AbstractBaseRouter
-from fastapi_mongo_base.schemas import BusinessEntitySchema, PaginatedResponse
+from fastapi_mongo_base.schemas import BusinessEntitySchema
 
+from .core import exceptions
 from .middlewares import AuthorizationData, authorization_middleware, get_business
 from .models import Business
 
@@ -33,23 +34,14 @@ class AbstractBusinessBaseRouter(AbstractBaseRouter[T, TS]):
         created_at_to: datetime | None = None,
     ):
         user_id = await self.get_user_id(request)
-        limit = max(1, min(limit, Settings.page_max_limit))
-
-        items, total = await self.model.list_total_combined(
+        return await self._list_items(
+            request=request,
+            offset=offset,
+            limit=limit,
             user_id=user_id,
             business_name=business.name,
-            offset=offset,
-            limit=limit,
             created_at_from=created_at_from,
             created_at_to=created_at_to,
-        )
-        items_in_schema = [self.list_item_schema(**item.model_dump()) for item in items]
-
-        return PaginatedResponse(
-            items=items_in_schema,
-            total=total,
-            offset=offset,
-            limit=limit,
         )
 
     async def retrieve_item(
@@ -103,8 +95,64 @@ class AbstractBusinessBaseRouter(AbstractBaseRouter[T, TS]):
 
 
 class AbstractAuthRouter(AbstractBusinessBaseRouter[T, TS]):
+    def __init__(
+        self,
+        model: Type[T],
+        *args,
+        auth_policy: Literal[
+            "anonymous", "user", "user_read", "business", "business_only"
+        ] = "user",
+        user_dependency: Any = None,
+        prefix: str = None,
+        tags: list[str] = None,
+        schema: Type[TS] = None,
+        **kwargs,
+    ):
+        super().__init__(
+            model,
+            *args,
+            user_dependency=user_dependency,
+            prefix=prefix,
+            tags=tags,
+            schema=schema,
+            **kwargs,
+        )
+        self.auth_policy = auth_policy
+
     async def get_auth(self, request: Request) -> AuthorizationData:
-        return await authorization_middleware(request)
+        if self.auth_policy == "anonymous":
+            auth = await authorization_middleware(request, anonymous_accepted=True)
+            if request.method in ["GET", "HEAD"]:
+                return auth
+            raise exceptions.AuthorizationException(
+                f"Anonymous user cannot use {self.model.__name__} resource"
+            )
+
+        auth = await authorization_middleware(request)
+
+        if self.auth_policy == "business_only":
+            if auth.issuer_type != "Business":
+                raise exceptions.AuthorizationException(
+                    f"User cannot use {self.model.__name__} resource"
+                )
+            return auth
+
+        if self.auth_policy == "business":
+            if auth.issuer_type == "User":
+                raise exceptions.AuthorizationException(
+                    f"User cannot use {self.model.__name__} resource"
+                )
+
+            return auth
+
+        if self.auth_policy == "user_read":
+            if auth.issuer_type == "User" and request.method in ["GET", "HEAD"]:
+                return auth
+            raise exceptions.AuthorizationException(
+                f"User cannot write {self.model.__name__} resource"
+            )
+
+        return auth
 
     async def list_items(
         self,
@@ -115,19 +163,14 @@ class AbstractAuthRouter(AbstractBusinessBaseRouter[T, TS]):
         created_at_to: datetime | None = None,
     ):
         auth = await self.get_auth(request)
-        items, total = await self.model.list_total_combined(
-            user_id=auth.user_id,
-            business_name=auth.business.name,
+        return await self._list_items(
+            request=request,
             offset=offset,
             limit=limit,
+            user_id=auth.user_id,
+            business_name=auth.business.name,
             created_at_from=created_at_from,
             created_at_to=created_at_to,
-        )
-
-        items_in_schema = [self.list_item_schema(**item.model_dump()) for item in items]
-
-        return PaginatedResponse(
-            items=items_in_schema, offset=offset, limit=limit, total=total
         )
 
     async def retrieve_item(self, request: Request, uid: uuid.UUID):

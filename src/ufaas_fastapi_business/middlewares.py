@@ -2,16 +2,12 @@ import uuid
 from typing import Literal
 
 from fastapi import Request
+from fastapi_mongo_base.core.exceptions import BaseHTTPException
 from pydantic import BaseModel
 from usso import UserData
 from usso.fastapi import jwt_access_security, jwt_access_security_None
 
 from .models import Business
-
-try:
-    from core.exceptions import BaseHTTPException
-except ImportError:
-    from fastapi_mongo_base.core.exceptions import BaseHTTPException
 
 
 class AuthorizationData(BaseModel):
@@ -23,11 +19,6 @@ class AuthorizationData(BaseModel):
     app_id: str | None = None
 
     scopes: list[str] | None = None
-
-
-class AuthorizationException(BaseHTTPException):
-    def __init__(self, message: str):
-        super().__init__(401, "authorization_error", message)
 
 
 async def get_business(
