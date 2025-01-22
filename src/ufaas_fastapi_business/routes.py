@@ -146,7 +146,9 @@ class AbstractAuthRouter(AbstractBusinessBaseRouter[T, TS]):
             return auth
 
         if self.auth_policy == "user_read":
-            if auth.issuer_type == "User" and request.method in ["GET", "HEAD"]:
+            if auth.issuer_type != "User":
+                return auth
+            if request.method in ["GET", "HEAD"]:
                 return auth
             raise exceptions.AuthorizationException(
                 f"User cannot write {self.model.__name__} resource"
